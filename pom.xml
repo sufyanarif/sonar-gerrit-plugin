@@ -17,6 +17,9 @@
       <name>Apache License</name>
     </license>
   </licenses>
+  <prerequisites>
+    <maven>3.3.9</maven>
+  </prerequisites>
   <scm>
     <connection>scm:git:https://github.com/tech-advantage/sonar-gerrit-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:tech-advantage/sonar-gerrit-plugin.git</developerConnection>
@@ -29,19 +32,25 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <sonar.buildVersion>6.0</sonar.buildVersion>
-    <sonar-packaging.version>1.15</sonar-packaging.version>
+    <sonar-packaging.version>1.18.0.372</sonar-packaging.version>
     <jdk.min.version>1.8</jdk.min.version>
     <maven.min.version>3.3.9</maven.min.version>
     <!-- apache maven plugins -->
-    <plugin.maven-compiler-plugin.version>3.3</plugin.maven-compiler-plugin.version>
+    <plugin.maven-clean-plugin.version>3.0.0</plugin.maven-clean-plugin.version>
+    <plugin.maven-compiler-plugin.version>3.7.0</plugin.maven-compiler-plugin.version>
+    <plugin.maven-deploy-plugin.version>2.8.2</plugin.maven-deploy-plugin.version>
     <plugin.maven-enforcer-plugin.version>3.0.0-M1</plugin.maven-enforcer-plugin.version>
-    <plugin.maven-project-info-reports-plugin.version>2.8.1</plugin.maven-project-info-reports-plugin.version>
-    <plugin.maven-surefire-report-plugin.version>2.18.1</plugin.maven-surefire-report-plugin.version>
+    <plugin.maven-install-plugin.version>2.5.2</plugin.maven-install-plugin.version>
+    <plugin.maven-resources-plugin.version>3.0.2</plugin.maven-resources-plugin.version>
+    <plugin.maven-project-info-reports-plugin.version>2.9</plugin.maven-project-info-reports-plugin.version>
+    <plugin.maven-site-plugin.version>3.7</plugin.maven-site-plugin.version>
+    <plugin.maven-surefire-plugin.version>2.20.1</plugin.maven-surefire-plugin.version>
+    <plugin.maven-surefire-report-plugin.version>${plugin.maven-surefire-plugin.version}</plugin.maven-surefire-report-plugin.version>
     <!-- other plugins -->
     <plugin.jacoco-maven-plugin.version>0.8.0</plugin.jacoco-maven-plugin.version>
-    <plugin.native2ascii-maven-plugin.version>1.0-beta-1</plugin.native2ascii-maven-plugin.version>
-    <plugin.sonar-maven-plugin.version>3.0.2</plugin.sonar-maven-plugin.version>
-    <plugin.sortpom-maven-plugin.version>2.4.0</plugin.sortpom-maven-plugin.version>
+    <plugin.native2ascii-maven-plugin.version>2.0.0</plugin.native2ascii-maven-plugin.version>
+    <plugin.sonar-maven-plugin.version>3.4.0.905</plugin.sonar-maven-plugin.version>
+    <plugin.sortpom-maven-plugin.version>2.8.0</plugin.sortpom-maven-plugin.version>
   </properties>
   <dependencies>
     <dependency>
@@ -128,13 +137,43 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${plugin.maven-clean-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${plugin.maven-compiler-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${plugin.maven-deploy-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>${plugin.maven-enforcer-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${plugin.maven-install-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${plugin.maven-resources-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${plugin.maven-site-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${plugin.maven-surefire-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -211,8 +250,9 @@
         <artifactId>native2ascii-maven-plugin</artifactId>
         <executions>
           <execution>
+            <id>utf8-to-latin1</id>
             <goals>
-              <goal>native2ascii</goal>
+              <goal>resources</goal>
             </goals>
           </execution>
         </executions>
