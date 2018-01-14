@@ -31,6 +31,8 @@
     <sonar.buildVersion>6.0</sonar.buildVersion>
     <sonar-packaging.version>1.15</sonar-packaging.version>
     <jdk.min.version>1.8</jdk.min.version>
+    <maven.min.version>3.3.9</maven.min.version>
+    <plugin.maven-enforcer-plugin.version>3.0.0-M1</plugin.maven-enforcer-plugin.version>
   </properties>
   <dependencies>
     <dependency>
@@ -113,7 +115,38 @@
     </repository>
   </repositories>
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${plugin.maven-enforcer-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-prerequisites</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>${jdk.min.version}</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>${maven.min.version}</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
         <artifactId>sonar-packaging-maven-plugin</artifactId>
