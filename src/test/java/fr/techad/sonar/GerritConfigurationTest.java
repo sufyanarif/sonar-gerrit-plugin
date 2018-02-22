@@ -9,6 +9,8 @@ import org.sonar.api.config.Settings;
 
 import fr.techad.sonar.GerritConfiguration;
 import fr.techad.sonar.GerritPluginException;
+import org.sonar.api.config.internal.MapSettings;
+
 import static org.fest.assertions.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -20,7 +22,7 @@ public class GerritConfigurationTest {
 
 	@Before
 	public void setUp() {
-		settings = new Settings().appendProperty(PropertyKey.GERRIT_SCHEME, "http")
+		settings = new MapSettings().appendProperty(PropertyKey.GERRIT_SCHEME, "http")
 				.appendProperty(PropertyKey.GERRIT_HOST, "localhost").appendProperty(PropertyKey.GERRIT_PORT, "8080")
 				.appendProperty(PropertyKey.GERRIT_USERNAME, "sonar")
 				.appendProperty(PropertyKey.GERRIT_PASSWORD, "sonar")

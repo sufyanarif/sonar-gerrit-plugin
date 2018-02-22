@@ -31,7 +31,7 @@
   </issueManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sonar.buildVersion>6.0</sonar.buildVersion>
+    <sonar.buildVersion>6.7.1</sonar.buildVersion>
     <sonar-packaging.version>1.18.0.372</sonar-packaging.version>
     <jdk.min.version>1.8</jdk.min.version>
     <maven.min.version>3.3.9</maven.min.version>

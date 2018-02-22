@@ -11,6 +11,7 @@ import fr.techad.sonar.GerritConfiguration;
 import fr.techad.sonar.GerritPluginException;
 import fr.techad.sonar.PropertyKey;
 import fr.techad.sonar.gerrit.factory.GerritConnectorFactory;
+import org.sonar.api.config.internal.MapSettings;
 
 public class GerritFacadeTest {
 	
@@ -18,7 +19,7 @@ public class GerritFacadeTest {
 	
 	@Before
 	public void setUp() {
-	    Settings settings = new Settings().appendProperty(PropertyKey.GERRIT_SCHEME, "http")
+	    Settings settings = new MapSettings().appendProperty(PropertyKey.GERRIT_SCHEME, "http")
                 .appendProperty(PropertyKey.GERRIT_HOST, "localhost").appendProperty(PropertyKey.GERRIT_PORT, "8080")
                 .appendProperty(PropertyKey.GERRIT_USERNAME, "sonar")
                 .appendProperty(PropertyKey.GERRIT_PASSWORD, "sonar").appendProperty(PropertyKey.GERRIT_BASE_PATH, "")

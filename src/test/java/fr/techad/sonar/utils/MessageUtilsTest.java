@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.sonar.api.batch.postjob.issue.PostJobIssue;
 import org.sonar.api.batch.rule.Severity;
 import org.sonar.api.config.Settings;
+import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleKey;
 
 import fr.techad.sonar.PropertyKey;
@@ -26,7 +27,7 @@ public class MessageUtilsTest {
     public void validateSubstitution() {
         // given
         // when
-        Settings settings = new Settings()
+        Settings settings = new MapSettings()
                 .appendProperty(PropertyKey.GERRIT_MESSAGE, "Sonar review at ${sonar.host.url}")
                 .appendProperty("sonar.host.url", "http://sq.example.com/");
         // then
@@ -43,7 +44,7 @@ public class MessageUtilsTest {
         when(issue.message()).thenReturn("You have a problem there");
         when(issue.severity()).thenReturn(Severity.BLOCKER);
         // when
-        Settings settings = new Settings()
+        Settings settings = new MapSettings()
                 .appendProperty(PropertyKey.GERRIT_ISSUE_COMMENT,
                         "[${issue.isNew}] New: ${issue.ruleKey} on ${sonar.host.url} Severity: ${issue.severity}, Message: ${issue.message}")
                 .appendProperty("sonar.host.url", "http://sq.example.com/");
