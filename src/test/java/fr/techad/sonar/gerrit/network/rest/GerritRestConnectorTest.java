@@ -14,6 +14,7 @@ import fr.techad.sonar.GerritPluginException;
 import fr.techad.sonar.PropertyKey;
 import fr.techad.sonar.gerrit.GerritConnector;
 import fr.techad.sonar.gerrit.factory.GerritConnectorFactory;
+import org.sonar.api.config.internal.MapSettings;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GerritRestConnectorTest {
@@ -22,7 +23,7 @@ public class GerritRestConnectorTest {
     @Before
     public void setUp() {
         // Common Settings
-        settings = new Settings().appendProperty(PropertyKey.GERRIT_SCHEME, GerritConstants.SCHEME_HTTP)
+        settings = new MapSettings().appendProperty(PropertyKey.GERRIT_SCHEME, GerritConstants.SCHEME_HTTP)
                 .appendProperty(PropertyKey.GERRIT_HOST, "localhost").appendProperty(PropertyKey.GERRIT_PORT, "8080")
                 .appendProperty(PropertyKey.GERRIT_PROJECT, "project")
                 .appendProperty(PropertyKey.GERRIT_CHANGE_ID, "changeid")
