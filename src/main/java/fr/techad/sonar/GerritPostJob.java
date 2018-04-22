@@ -2,10 +2,12 @@ package fr.techad.sonar;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.sonar.api.batch.fs.InputComponent;
 import org.sonar.api.batch.fs.InputPath;
@@ -13,6 +15,7 @@ import org.sonar.api.batch.postjob.PostJob;
 import org.sonar.api.batch.postjob.PostJobContext;
 import org.sonar.api.batch.postjob.PostJobDescriptor;
 import org.sonar.api.batch.postjob.issue.PostJobIssue;
+import org.sonar.api.batch.rule.Severity;
 import org.sonar.api.config.Settings;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -22,8 +25,8 @@ import fr.techad.sonar.gerrit.factory.GerritFacadeFactory;
 import fr.techad.sonar.gerrit.review.ReviewFileComment;
 import fr.techad.sonar.gerrit.review.ReviewInput;
 import fr.techad.sonar.gerrit.review.ReviewLineComment;
-import fr.techad.sonar.gerrit.utils.ReviewUtils;
-import fr.techad.sonar.utils.MessageUtils;
+
+
 
 public class GerritPostJob implements PostJob {
     private static final Logger LOG = Loggers.get(GerritPostJob.class);
@@ -31,18 +34,20 @@ public class GerritPostJob implements PostJob {
     private final GerritConfiguration gerritConfiguration;
     private List<String> gerritModifiedFiles;
     private GerritFacade gerritFacade;
-    private ReviewUtils reviewUtils;
-    private MessageUtils messageUtils;
     private ReviewInput reviewInput = ReviewHolder.getReviewInput();
 
+
+
+
+
+
     public GerritPostJob(Settings settings, GerritConfiguration gerritConfiguration,
-            GerritFacadeFactory gerritFacadeFactory, ReviewUtils reviewUtils, MessageUtils messageUtils) {
+            GerritFacadeFactory gerritFacadeFactory) {
         LOG.debug("[GERRIT PLUGIN] Instanciating GerritPostJob");
         this.settings = settings;
         this.gerritFacade = gerritFacadeFactory.getFacade();
         this.gerritConfiguration = gerritConfiguration;
-        this.reviewUtils = reviewUtils;
-        this.messageUtils = messageUtils;
+
     }
 
     @Override
@@ -78,20 +83,20 @@ public class GerritPostJob implements PostJob {
 
         try {
             LOG.info("[GERRIT PLUGIN] Analysis has finished. Sending results to Gerrit.");
-            reviewInput.setMessage(messageUtils.createMessage(gerritConfiguration.getMessage(), settings));
+            reviewInput.setMessage(createMessage(gerritConfiguration.getMessage(), settings));
 
             LOG.debug("[GERRIT PLUGIN] Define message : {}", reviewInput.getMessage());
             LOG.debug("[GERRIT PLUGIN] Number of comments : {}", reviewInput.size());
 
             int maxLevel = reviewInput.maxLevelSeverity();
             LOG.debug("[GERRIT PLUGIN] Configured threshold {}, max review level {}",
-                    gerritConfiguration.getThreshold(), reviewUtils.valueToThreshold(maxLevel));
+                    gerritConfiguration.getThreshold(), valueToThreshold(maxLevel));
 
             if (reviewInput.isEmpty()) {
                 LOG.debug("[GERRIT PLUGIN] No issues ! Vote {} for the label : {}",
                         gerritConfiguration.getVoteNoIssue(), gerritConfiguration.getLabel());
                 reviewInput.setValueAndLabel(gerritConfiguration.getVoteNoIssue(), gerritConfiguration.getLabel());
-            } else if (maxLevel < reviewUtils.thresholdToValue(gerritConfiguration.getThreshold())) {
+            } else if (maxLevel < thresholdToValue(gerritConfiguration.getThreshold())) {
                 LOG.debug("[GERRIT PLUGIN] Issues below threshold. Vote {} for the label : {}",
                         gerritConfiguration.getVoteBelowThreshold(), gerritConfiguration.getLabel());
                 reviewInput.setValueAndLabel(gerritConfiguration.getVoteBelowThreshold(),
@@ -151,9 +156,9 @@ public class GerritPostJob implements PostJob {
         ReviewLineComment result = new ReviewLineComment();
 
         result.setLine(issue.line());
-        result.setSeverity(reviewUtils.thresholdToValue(issue.severity().toString()));
+        result.setSeverity(thresholdToValue(issue.severity().toString()));
 
-        result.setMessage(messageUtils.createIssueMessage(gerritConfiguration.getIssueComment(), settings, issue));
+        result.setMessage(createIssueMessage(gerritConfiguration.getIssueComment(), settings, issue));
         LOG.debug("[GERRIT PLUGIN] issueToComment {}", result.toString());
         return result;
     }
@@ -205,4 +210,136 @@ public class GerritPostJob implements PostJob {
         }
         return filename;
     }
+
+
+    //Taken from messageutils
+
+
+    private static final String ISSUE_PREFIX = "issue";
+    private static final String ISSUE_IS_NEW = "isNew";
+    private static final String ISSUE_RULE_KEY = "ruleKey";
+    private static final String ISSUE_SEVERITY = "severity";
+    private static final String ISSUE_MESSAGE = "message";
+    private static final String ISSUE_SEPARATOR = ".";
+
+    /**
+     * Create the issue message. The variables contained in the original message
+     * are replaced by the settings values and the issue data.
+     *
+     * @param originalMessage
+     *            the original message
+     * @param settings
+     *            the settings
+     * @param issue
+     *            the issue
+     * @return a new message with the replaced variables by data.
+     */
+    public String createIssueMessage(String originalMessage, Settings settings, PostJobIssue issue) {
+        HashMap<String, Object> valueMap = new HashMap<>();
+        valueMap.put(prefixKey(ISSUE_PREFIX, ISSUE_IS_NEW), issue.isNew());
+        valueMap.put(prefixKey(ISSUE_PREFIX, ISSUE_RULE_KEY), issue.ruleKey());
+        valueMap.put(prefixKey(ISSUE_PREFIX, ISSUE_SEVERITY), issue.severity());
+        valueMap.put(prefixKey(ISSUE_PREFIX, ISSUE_MESSAGE), issue.message());
+        return substituteProperties(originalMessage, settings, valueMap);
+    }
+
+    /**
+     * Create the message from originalMessage and Settings. The variables
+     * contained in the originalMessage are replaced by the Settings value
+     *
+     * @param originalMessage
+     *            the original message which contains variables
+     * @param settings
+     *            the settings
+     * @return a new string with substituted variables.
+     */
+    public String createMessage(String originalMessage, Settings settings) {
+        return substituteProperties(originalMessage, settings, Collections.<String, Object>emptyMap());
+    }
+
+    /**
+     * Build a string based on an original string and the replacement by
+     * settings and map values
+     *
+     * @param originalMessage
+     *            the original string
+     * @param settings
+     *            the settings
+     * @param additionalProperties
+     *            the additional values
+     * @return the built message
+     */
+    private String substituteProperties(String originalMessage, Settings settings,
+                                        Map<String, Object> additionalProperties) {
+        if (additionalProperties.isEmpty()) {
+            return StrSubstitutor.replace(originalMessage, settings.getProperties());
+        }
+        additionalProperties.putAll(settings.getProperties());
+        return StrSubstitutor.replace(originalMessage, additionalProperties);
+    }
+
+    /**
+     * Create the key
+     *
+     * @param prefix
+     *            the prefix key
+     * @param key
+     *            the key
+     * @return the key
+     */
+    private String prefixKey(String prefix, String key) {
+        return new StringBuffer(prefix).append(ISSUE_SEPARATOR).append(key).toString();
+    }
+
+    //ReviewUtils
+
+
+//    private static final Logger LOG = Loggers.get(ReviewUtils.class);
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final int UNKNOWN_VALUE = -1;
+
+
+    public int thresholdToValue(String threshold) {
+        int thresholdValue = UNKNOWN_VALUE;
+
+        try {
+            thresholdValue = Severity.valueOf(threshold).ordinal();
+        }
+        catch (Exception e) {
+            LOG.warn("[GERRIT PLUGIN] Cannot convert threshold String {} to int. Using UNKNOWN.", threshold);
+            thresholdValue = UNKNOWN_VALUE;
+        }
+
+        LOG.debug("[GERRIT PLUGIN] {} is converted to {}", threshold, thresholdValue);
+
+        return thresholdValue;
+    }
+
+    public String valueToThreshold(int value) {
+        String threshold = UNKNOWN;
+
+        try {
+            threshold = Severity.values()[value].toString();
+        }
+        catch (Exception e){
+            LOG.warn("[GERRIT PLUGIN] Cannot convert threshold int {} to String. Using UNKNOWN.", value);
+        }
+
+        LOG.debug("[GERRIT PLUGIN] {} is converted to {}", value, threshold);
+
+        return threshold;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
