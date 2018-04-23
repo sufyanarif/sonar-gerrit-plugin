@@ -1,4 +1,24 @@
+dist: trusty
+sudo: false
 language: java
 jdk:
-  - oraclejdk8
-sudo: false
+- openjdk8
+git:
+  depth: 3
+cache:
+  directories:
+  - "$HOME/.m2"
+before_install:
+- git clone https://github.com/CJSCommonPlatform/travis-settings.git target/travis-settings
+- ln -sfT ${PWD}/target/travis-settings/settings.xml ${HOME}/.m2/settings.xml
+- ln -sfT ${PWD}/target/travis-settings/mvnw mvnw
+- ln -sft ${PWD} ${PWD}/target/travis-settings/.mvn
+install: "${PWD}/target/travis-settings/java/install.sh -DexcludeGroupIds=fr.techad"
+script: "${PWD}/target/travis-settings/java/script-install.sh"
+after_success:
+- export TAG_MATCH='v*'
+- "${PWD}/target/travis-settings/java/after_success.sh -DaltDeploymentRepository='bintray-cjscommonplatform-maven-releases::default::https://api.bintray.com/maven/cjscommonplatform/maven-releases/sonar-gerrit-plugin/'"
+env:
+  global:
+  - secure: MZQNbWARZe93vjlWGl/bhXe9MM3/q+JGk5zjtbNj/MBHxCcQWNLKAOVeH1G/qVmpfir4MaULvtoIb0jKti2ccbjrSTARBKl6U9H+5ZYiR0g3Nxcbff6GFSUm3a8gkUwW8vz4D+P+q49zspAxIs10CrzD8s6TremWE5yTXH79My3JR+RhQQWikhxmmElcjPl+HUzhuiDeFgPF/5jCkzqsByU/0Jc3a+OWxOtyyYnUPREBSw8SQGuObiYvB3BLyql/vM1ZavEVQW9qrJ9SHxShWsqtpplWJvxghh6aUbut7Cv8uvxND+x2yROiB/+W1Znugw5Qhy+GilQaYnacxxs267bZ2V/IHDpVSIHS5Z1J8ADmOicNX+qCg/rtjnVAwp/QeVSMLsy9bHvyP9XnBdEJ2j+RRmHHuAJVMDHX6Hr89tO2m6LhTnT55kTw66amS80/I1crTBC99+SCwOWTx7C5MlA2wPIZzSkVvoLStef+PP1xN+rVTBzHfoGBiSP2MTgNFTbMJwZqJXcC/OF4otRJdbjh0n2hu1Ku8CpGBMFQKh86Oosx3QwEwN0o2ELqnjVeynyZMrOsMCvGcnAXXpWdmIU/zJnX6YZRdyOOG/peHEHus1CbUWf5TbogpD1eJqiFRXjX5J+7l/IDYMsOaZNsoAbFCT6a/a3287qdaShMiVI=
+  - secure: GC9wAqwxukgbpW2rJXC5XIz4+xdhz2k+yuAgx6QxuP5olMRuYAjBN/BCvJSAeX0kl+whj5ac1O7Xu3bd+OTEYrjvl86+QvLL3TeX7OEqHC8KAjfW1R4esTuGsQ854mQJY9Ju1t8abl55WAJrG8u9OJZPVt88hufjoHysCnF+F5JwUtjBRUw1sMx41EnsimJObV9dS0bGoAfKqjVqj8kAr+8z9PtZf+gIJ7bwzFF6extsYh0d5LBoy7Dr9cNpogKfjZks//cFX4NXoHWlejCoa6R7gTelfvF7yC9841s5PwQJECwxPkkAIOO8pDgfAaYb3Px2bbn6yExvQ2ObPhWQcpB9teGbkqKkXU4o8Wm4klAjtQxbATUIdvEwzIiDNF7J4vREKcwospMaUey2oJvGKwPy+Oztewoxa6i0/Ah8cnu5X2c7HVPs/r6EIf4FNtrEQ95/e82F6IKMiboqKYIiMbd2ap5WZEGFIQVrd62z0AYpY6agL9EFqT/PYNuSZa6kjyKRmRFpUue6QEvNfkY3X1nl7wU7AMN1gcc563jrQPOBKLOXaTjhBVu5W2SIyyvXooT0eOzjccx+yLCShQYwQv2RpTtOj28Y8phQTd7AvIEtHdgVwynGngB3tQKmtHsAvMgi9u+zxepoAN245B8FWyc4V2wKeUcIwSgSpsQp+ik=
